@@ -18,12 +18,10 @@ unsigned long _avr_timer_M = 0;
 unsigned long _avr_timer_cntcurr = 0;
 
 
-int lights[] = {0x01, 0x02, 0x04, 0x02};
-enum States{init, Light, stop} lightStates;
+int lights[] = {0x01, 0x02, 0x04};
+enum States{init, Light} lightStates;
 unsigned int i = 0;
-unsigned char tmpA = 0x00;
 unsigned char tmpB = 0x00;
-unsigned char counter = 1;
 
 void TimerOn(){
 	TCCR1B = 0x0B;
@@ -61,16 +59,9 @@ void tick(){
 			i = 0;
 			break;
 		case Light:
-			tmpB = lights[i % 4];
-			i+=counter;
+			tmpB = lights[i % 3];
+			++i;
 			lightStates = Light;
-			if(tmpA & 0x01)
-				lightStates = stop;
-			break;
-		case stop:
-			lightStates = stop;
-			if(tmpA & 0x01)
-				lightStates = Light;
 			break;
 	}
 }
@@ -79,12 +70,10 @@ int main(void) {
     /* Insert DDR and PORT initializations */
 	DDRB  = 0xFF;
 	PORTB = 0x00;
-	TimerSet(300);
+	TimerSet(1000);
 	TimerOn();
     /* Insert your solution below */
     while (1) {
-		PORTA = PINA;
-		tmpA = PORTA;
 		tick();
 		PORTB = tmpB;
 		while(!TimerFlag);
